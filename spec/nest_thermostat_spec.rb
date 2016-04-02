@@ -1,9 +1,10 @@
 require 'spec_helper'
 
 module NestThermostat
+
   describe Nest do
     before(:all) do
-      @nest = Nest.new(email: ENV['NEST_EMAIL'], password: ENV['NEST_PASS'], temperature_scale: :fahrenheit)
+      @nest = Nest.new(email: ENV['NEST_EMAIL'], password: ENV['NEST_PASSWORD'], temperature_scale: :fahrenheit)
     end
 
     it "logs in to home.nest.com" do
@@ -17,14 +18,57 @@ module NestThermostat
     end
 
     it "does not remember the login email or password" do
-      nest = Nest.new(email: ENV['NEST_EMAIL'], password: ENV['NEST_PASS'], temperature_scale: :fahrenheit)
-
+      nest = Nest.new(email: ENV['NEST_EMAIL'], password: ENV['NEST_PASSWORD'], temperature_scale: :fahrenheit)
       expect(nest).not_to respond_to(:email)
       expect(nest).not_to respond_to(:password)
     end
 
+    it "gets structures" do
+      expect(@nest.structures).to_not be_nil
+    end
+
+    it "sets a structure by name" do
+      @nest.set_structure(ENV['NEST_STRUCTURE_NAME'])
+      expect(@nest.structure['name']).to match ENV['NEST_STRUCTURE_NAME']
+    end
+
+    it "sets a default structure" do
+      @nest.set_default_structure
+      expect(@nest.structure['name']).to match ENV['NEST_STRUCTURE_NAME']
+    end
+
+    it "gets the temperature before setting a device" do
+      expect {
+        @nest.current_temperature
+      }.to raise_error
+    end
+
+    it "gets devices" do
+      expect(@nest.devices).to_not be_nil
+    end
+
+    it "sets a device by name" do
+      @nest.set_device(ENV['NEST_DEVICE_NAME'])
+      expect(@nest.device()['serial_number']).to match ENV['NEST_DEVICE_SERIAL_NUMBER']
+    end
+
+    it "sets a default device" do
+      @nest.set_default_device
+      expect(@nest.device()['serial_number']).to_not be_nil
+    end
+
+    it "sets a device by id" do
+      @nest.set_device(ENV['NEST_DEVICE_SERIAL_NUMBER'])
+      expect(@nest.device()['serial_number']).to match ENV['NEST_DEVICE_SERIAL_NUMBER']
+    end
+
+    it "gets the device" do
+      d = @nest.device
+      expect(d['serial_number']).to match ENV['NEST_DEVICE_SERIAL_NUMBER']
+    end
+
     it "gets the status" do
-      expect(@nest.status['device'].first[1]['mac_address']).to match(/(\d|[a-f]|[A-F])+/)
+      expect(@nest.device['mac_address']).to match(/(\d|[a-f]|[A-F])+/)
     end
 
     it "gets the pubic ip address" do
@@ -71,39 +115,39 @@ module NestThermostat
     end
 
     it "sets the temperature" do
-      @nest.temp = '74'
-      expect(@nest.temp.round).to eq(74)
+      @nest.temp = '67'
+      expect(@nest.temp.round).to eq(67)
 
-      @nest.temperature = '73'
-      expect(@nest.temperature).to eq(73)
+      @nest.temperature = '67'
+      expect(@nest.temperature.round).to eq(67)
     end
 
     it "sets the low temperature" do
-      @nest.temp_low = '73'
-      expect(@nest.temp_low.round).to eq(73)
+      @nest.temp_low = '60'
+      expect(@nest.temp_low.round).to eq(60)
 
-      @nest.temperature_low = '74'
-      expect(@nest.temperature_low.round).to eq(74)
+      @nest.temperature_low = '60'
+      expect(@nest.temperature_low.round).to eq(60)
     end
 
     it "sets the high temperature" do
-      @nest.temp_high = '73'
-      expect(@nest.temp_high.round).to eq(73)
+      @nest.temp_high = '85'
+      expect(@nest.temp_high.round).to eq(85)
 
-      @nest.temperature_high = '74'
-      expect(@nest.temperature_high.round).to eq(74)
+      @nest.temperature_high = '85'
+      expect(@nest.temperature_high.round).to eq(85)
     end
 
     it "sets the temperature in celsius" do
       @nest.temperature_scale = :celsius
-      @nest.temperature = '22'
-      expect(@nest.temperature).to eq(22.0)
+      @nest.temperature = '19.44'
+      expect(@nest.temperature).to eq(19.44)
     end
 
     it "sets the temperature in kelvin" do
       @nest.temp_scale = :kelvin
-      @nest.temperature = '296'
-      expect(@nest.temperature).to eq(296.0)
+      @nest.temperature = '292.6'
+      expect(@nest.temperature).to eq(292.6)
     end
 
     it "gets the target temperature time" do
